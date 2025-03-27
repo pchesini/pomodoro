@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, Text, View,SafeAreaView, Platform, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import Header from './src/componentes/header';
+import Timer from './src/componentes/Timer';
+import { Audio } from 'expo-av';
 
 const colores = ["#F7DC6F","#A2D9CE","#D7BDE2"];
 
@@ -10,17 +12,41 @@ export default function App() {
   const [isWorking, setIsWorking] = useState(false);
   const [time, setTime] = useState(25 * 60);
   const [CurrentTime, setCurrentTime] = useState("POMO" |"CORTO"| "LARGO");
+  const [isActive, setIsActive] = useState(false);
+
+  function handlesStartStop(){
+    playSound();
+    setIsActive(!isActive);
+  }
+
+   async function playSound(){
+    const { sound } = await Audio.Sound.createAsync(
+      require("./assets/click.wav")
+    )
+    await sound.playAsync();
+  }
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: colores[CurrentTime]}]}>
-    <View style={{paddingTop: Platform.OS === "android" && 30}}>
+    <View style={{
+      flex: 1,
+      paddingHorizontal: 15, 
+      paddingTop: Platform.OS === "android" && 30}}>
       <Text style={styles.text}>Pomodoro</Text>
-      <Text style={styles.text}>{time}</Text>
-      <Header CurrentTime={CurrentTime} 
+      <Header 
+      CurrentTime={CurrentTime} 
       setCurrentTime={setCurrentTime} 
       setTime ={setTime}/>
+     
+      <Timer time= {time}/>
+      <TouchableOpacity onPress={handlesStartStop} style={styles.button}>
+        <Text style={{color: "white", fontWeight: "bold"}}>
+        {isActive ? "STOP" : "START"}
+        </Text>
+      </TouchableOpacity>
       <StatusBar style="auto" />
     </View>
+
     </SafeAreaView>
   );
 }
@@ -33,6 +59,14 @@ const styles = StyleSheet.create({
   
   text: {
   fontSize:32,
-  fontWeigth: "bold"
-  }
+  fontWeigth: "bold",
+  },
+  button: {
+    backgroundColor: "#333333",
+    padding: 15,
+    marginTop: 15,
+    borderRadius: 15,
+    alignItems: "center",
+    
+    }
 });
